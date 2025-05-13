@@ -7,10 +7,6 @@ on:
         description: 'Branch to deploy'
         required: true
         default: 'main'
-      environment:
-        description: 'Environment to deploy (dev only)'
-        required: true
-        default: 'dev'
 
 jobs:
   build:
@@ -36,7 +32,7 @@ jobs:
           echo "${{ secrets.CD_APPLICATION }}" > ./src/main/resources/application.yml
 
       - name: Build Project
-        run: ./gradlew clean build -x test  # 테스트 제외하고 빌드 (테스트 수행이 필요한 경우 -x test 제거)
+        run: ./gradlew clean build -x test
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -56,7 +52,6 @@ jobs:
 
       - name: Create SSH Key File
         run: |
-          # dev 환경만 사용
           echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ssh_key.pem
           echo "${{ secrets.DEV_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
           chmod 600 ssh_key.pem
@@ -108,7 +103,9 @@ jobs:
           else
             NEW_PORT="8081"
           fi
-          echo "🔄 새 컨테이너 $NEW_PORT 포트에서 실행"
+
+          echo "🧹 기존 컨테이너 제거 (필요 시)"
+          sudo docker rm -f kyobo-app-$NEW_PORT || true
 
           echo "🚀 최신 이미지 가져오기"
           sudo docker pull dltnals317/kyobo-app:latest
@@ -117,22 +114,19 @@ jobs:
           sudo docker run -d -p $NEW_PORT:8080 \
             --name kyobo-app-$NEW_PORT \
             --network kyobo-network \
-            -e SPRING_PROFILES_ACTIVE=dev \
             dltnals317/kyobo-app:latest
 
           echo "⌛️ 30초 대기"
           sleep 30
 
-          echo "🛑 기존 컨테이너 중지 및 제거"
+          echo "🛑 이전 컨테이너 제거"
           sudo docker stop kyobo-app-$ACTIVE_PORT || true
           sudo docker rm kyobo-app-$ACTIVE_PORT || true
 
-          echo "🔎 상태 확인"
+          echo "✅ 배포 완료. 실행 중인 컨테이너 확인:"
           sudo docker ps -a
           EOSCRIPT
 
           echo "🚀 SSH 접속 및 배포 스크립트 실행"
           scp -i ssh_key.pem -o StrictHostKeyChecking=no deploy.sh ec2-user@$EC2_PUBLIC_IP:~
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP 'bash ~/deploy.sh'
-
-
