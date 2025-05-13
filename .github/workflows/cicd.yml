@@ -8,7 +8,7 @@ on:
         required: true
         default: 'main'
       environment:
-        description: 'Environment to deploy (dev or prod)'
+        description: 'Environment to deploy (dev only)'
         required: true
         default: 'dev'
 
@@ -56,13 +56,9 @@ jobs:
 
       - name: Create SSH Key File
         run: |
-          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
-            echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ssh_key.pem
-            echo "${{ secrets.DEV_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
-          else
-            echo "${{ secrets.PROD_EC2_SSH_KEY }}" > ssh_key.pem
-            echo "${{ secrets.PROD_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
-          fi
+          # dev 환경만 사용
+          echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ssh_key.pem
+          echo "${{ secrets.DEV_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
           chmod 600 ssh_key.pem
 
       - name: SSH into EC2 and Deploy
@@ -139,5 +135,4 @@ jobs:
           scp -i ssh_key.pem -o StrictHostKeyChecking=no deploy.sh ec2-user@$EC2_PUBLIC_IP:~
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP 'bash ~/deploy.sh'
 
-      
 
