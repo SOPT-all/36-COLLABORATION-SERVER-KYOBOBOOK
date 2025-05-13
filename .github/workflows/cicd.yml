@@ -58,21 +58,23 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
             echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ssh_key.pem
-            EC2_PUBLIC_IP="${{ secrets.DEV_EC2_PUBLIC_IP }}"
+            echo "${{ secrets.DEV_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
           else
             echo "${{ secrets.PROD_EC2_SSH_KEY }}" > ssh_key.pem
-            EC2_PUBLIC_IP="${{ secrets.PROD_EC2_PUBLIC_IP }}"
+            echo "${{ secrets.PROD_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
           fi
           chmod 600 ssh_key.pem
 
       - name: SSH into EC2 and Deploy
         run: |
+          EC2_PUBLIC_IP=$(cat ec2_public_ip.txt)
+
           echo "📄 Deploy 스크립트 생성 중..."
           cat << 'EOSCRIPT' > deploy.sh
           #!/bin/bash
 
           echo "🔍 현재 실행 중인 포트 확인"
-          ACTIVE_PORT=$(sudo docker ps -q --filter "name=kyobo-app" --format '{{.Ports}}' | grep -oE '808[12]' || echo "8081")
+          ACTIVE_PORT=$(sudo docker ps --format "{{.Ports}}" | grep -oE '0.0.0.0:808[12]' | cut -d':' -f2 | cut -d'-' -f1)
 
           echo "🌐 Docker 네트워크 존재 여부 확인"
           if ! sudo docker network inspect kyobo-network > /dev/null 2>&1; then
@@ -119,7 +121,7 @@ jobs:
           sudo docker run -d -p $NEW_PORT:8080 \
             --name kyobo-app-$NEW_PORT \
             --network kyobo-network \
-            -e SPRING_PROFILES_ACTIVE=${{ github.event.inputs.environment }} \
+            -e SPRING_PROFILES_ACTIVE=dev \
             dltnals317/kyobo-app:latest
 
           echo "⌛️ 30초 대기"
@@ -136,3 +138,6 @@ jobs:
           echo "🚀 SSH 접속 및 배포 스크립트 실행"
           scp -i ssh_key.pem -o StrictHostKeyChecking=no deploy.sh ec2-user@$EC2_PUBLIC_IP:~
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP 'bash ~/deploy.sh'
+
+      
+
