@@ -74,7 +74,8 @@ jobs:
           #!/bin/bash
 
           echo "🔍 현재 실행 중인 포트 확인"
-          ACTIVE_PORT=\$(sudo docker ps --format "{{.Ports}}" | grep -oE '0.0.0.0:808[12]' | cut -d':' -f2 | cut -d'-' -f1)
+          ACTIVE_PORT=$(sudo docker ps --format "{{.Ports}}" | grep -oE '0.0.0.0:808[12]' | cut -d':' -f2 | cut -d'-' -f1)
+
 
           echo "🌐 Docker 네트워크 존재 여부 확인"
           if ! sudo docker network inspect kyobo-network > /dev/null 2>&1; then
