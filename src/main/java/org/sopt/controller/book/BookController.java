@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class BookController {
 
-    @Autowired
     private final BookService bookService;
 
 
