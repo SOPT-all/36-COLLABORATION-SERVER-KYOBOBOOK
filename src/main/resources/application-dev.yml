@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://kyobobook-server-instance...:3306/kyobobook
+    username: admin
+    password: ryqhansrhtjqj
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
