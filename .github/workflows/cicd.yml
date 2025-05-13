@@ -121,6 +121,7 @@ jobs:
           sudo docker run -d -p $NEW_PORT:8080 \
             --name kyobo-app-$NEW_PORT \
             --network kyobo-network \
+            -e SPRING_PROFILES_ACTIVE=dev \
             dltnals317/kyobo-app:latest
 
           echo "⌛️ 30초 대기"
