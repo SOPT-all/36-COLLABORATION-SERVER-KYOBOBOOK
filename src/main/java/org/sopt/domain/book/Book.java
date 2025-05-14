@@ -20,7 +20,7 @@ public class Book {
     private String description;
     private LocalDate date;
     private String author;
-    //private Long rank;
+    private Long ranking;
 
     @OneToMany(mappedBy = "book")
     private List<Review> reviews;

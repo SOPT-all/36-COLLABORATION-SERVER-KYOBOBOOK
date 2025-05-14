@@ -16,17 +16,14 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    public List<BookResponseDTO> getAllBooks(){
-        List<Book> books = bookRepository.findAll();
-        return books.stream().map(book -> new BookResponseDTO(book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
-    }
-
     //상위 5개만 조회하는 비즈니스로직
+    private static final int TOP_BOOK_LIMIT = 5;
+
     public List<BookResponseDTO> getTop5Books(){
         List<Book> books = bookRepository.findAll();
-        List<Book> top5books = new ArrayList<>(books.subList(0,5));
-        return top5books.stream().map(book -> new BookResponseDTO(book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
+        int limit = Math.min(TOP_BOOK_LIMIT, books.size());
+        List<Book> top5Books = books.subList(0, limit);
+        return top5Books.stream().map(book -> new BookResponseDTO(book.getRanking(),book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
     }
 
 }
-        //String title, Long rank, String author, String publisher

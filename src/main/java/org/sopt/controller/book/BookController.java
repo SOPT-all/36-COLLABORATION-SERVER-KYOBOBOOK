@@ -15,12 +15,6 @@ public class BookController {
         this.bookService = bookService;
     }
 
-
-    @GetMapping("/books")
-    public List<BookResponseDTO> getAllBooks(){
-        return bookService.getAllBooks();
-    }
-
     @GetMapping("/books/top5")
     public List<BookResponseDTO> getTop5Books() {
         return bookService.getTop5Books();
