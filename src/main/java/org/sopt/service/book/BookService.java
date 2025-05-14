@@ -21,14 +21,12 @@ public class BookService {
         return books.stream().map(book -> new BookResponseDTO(book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
     }
 
-    //상위 5개만 조회하는 비즈니스로직 추가
+    //상위 5개만 조회하는 비즈니스로직
     public List<BookResponseDTO> getTop5Books(){
         List<Book> books = bookRepository.findAll();
         List<Book> top5books = new ArrayList<>(books.subList(0,5));
         return top5books.stream().map(book -> new BookResponseDTO(book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
     }
-
-
 
 }
         //String title, Long rank, String author, String publisher
