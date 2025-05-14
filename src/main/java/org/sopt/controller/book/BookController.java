@@ -17,8 +17,13 @@ public class BookController {
 
 
     @GetMapping("/books")
-    public List<BookResponseDTO> getTopFiveBooks(){
+    public List<BookResponseDTO> getAllBooks(){
         return bookService.getAllBooks();
+    }
+
+    @GetMapping("/books/top5")
+    public List<BookResponseDTO> getTop5Books() {
+        return bookService.getTop5Books();
     }
 
 }
