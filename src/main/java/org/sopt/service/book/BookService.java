@@ -2,10 +2,12 @@ package org.sopt.service.book;
 
 import org.sopt.domain.book.Book;
 import org.sopt.dto.book.response.BookResponseDTO;
+import org.sopt.dto.book.response.BookResponseDetailDTO;
 import org.sopt.repository.book.BookRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -16,7 +18,7 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    //상위 5개만 조회하는 비즈니스로직
+    //상위 5개 베스트도서 조회
     private static final int TOP_BOOK_LIMIT = 5;
 
     public List<BookResponseDTO> getTop5Books(){
@@ -25,5 +27,23 @@ public class BookService {
         List<Book> top5Books = books.subList(0, limit);
         return top5Books.stream().map(book -> new BookResponseDTO(book.getRanking(),book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
     }
+
+    //도서 상세 조회
+
+
+    public BookResponseDetailDTO getBookDetail(Long id){
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 도서를 찾을 수 없습니다"));
+
+        List<String> indexList = Arrays.stream(book.getBookIndex().split("\n"))
+                .filter(line -> !line.trim().isEmpty())
+                .toList();
+
+        return new BookResponseDetailDTO(book.getTitle(), book.getAuthor(), book.getPublisher(), book.getDate(), book.getPrice() + "원", book.getDescription().replace("\n", " "), indexList);
+
+    }
+
+
+
 
 }
