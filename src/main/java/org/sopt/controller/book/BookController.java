@@ -19,11 +19,6 @@ public class BookController {
     private final BookService bookService;
 
 
-    @GetMapping("/health").
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("OK");
-    }
-
     @GetMapping("/books/top5")
     public List<BookResponseDTO> getTop5Books() {
         return bookService.getTop5Books();
