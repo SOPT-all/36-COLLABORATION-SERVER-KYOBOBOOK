@@ -16,6 +16,7 @@ import java.util.List;
 public class ReviewStatistic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_statistic_id")
     private Long reviewStatisticId;
 
     private Double averageStar;

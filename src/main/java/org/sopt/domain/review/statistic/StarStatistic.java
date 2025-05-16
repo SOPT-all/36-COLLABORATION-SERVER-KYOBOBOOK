@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class StarStatistic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "star_statistic_id")
     private Long starStatisticId;
 
     private int starPoint; // 1~5

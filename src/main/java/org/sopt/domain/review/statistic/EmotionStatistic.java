@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class EmotionStatistic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "emotion_statistic_id")
     private Long emotionStatisticId;
 
     private String emotionTag;

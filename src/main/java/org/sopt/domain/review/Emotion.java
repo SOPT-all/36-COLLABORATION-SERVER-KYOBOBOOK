@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
 public class Emotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "emotion_id")
+    private Long emotionId;
 
     @Column(unique = true, nullable = false)
     private String emotionTag;  // 예: "감동이에요", "공감돼요" 등
