@@ -27,6 +27,7 @@ public class BookService {
         List<Book> books = bookRepository.findAll();
         int limit = Math.min(TOP_BOOK_LIMIT, books.size());
         List<Book> top5Books = books.subList(0, limit);
+
         return top5Books.stream().map(book -> new BookResponseDTO(book.getRanking(),book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
     }
 
