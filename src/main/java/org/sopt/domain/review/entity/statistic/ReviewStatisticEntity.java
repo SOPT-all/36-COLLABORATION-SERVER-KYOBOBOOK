@@ -1,10 +1,10 @@
-package org.sopt.domain.review.statistic;
+package org.sopt.domain.review.entity.statistic;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.sopt.domain.book.Book;
+import org.sopt.domain.book.entity.BookEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "review_statistic")
-public class ReviewStatistic {
+public class ReviewStatisticEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_statistic_id")
@@ -23,11 +23,11 @@ public class ReviewStatistic {
 
     @OneToOne
     @JoinColumn(name = "book_id", nullable = false, unique = true)
-    private Book book;
+    private BookEntity book;
 
     @OneToMany(mappedBy = "reviewStatistic", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StarStatistic> starStatistics = new ArrayList<>();
+    private List<StarStatisticEntity> starStatisticEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "reviewStatistic", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EmotionStatistic> emotionStatistics = new ArrayList<>();
+    private List<EmotionStatisticEntity> emotionStatisticEntities = new ArrayList<>();
 }

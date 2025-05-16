@@ -1,6 +1,6 @@
 package org.sopt.service.book;
 
-import org.sopt.domain.book.Book;
+import org.sopt.domain.book.entity.BookEntity;
 import org.sopt.dto.book.response.BookDetailResponseDTO;
 import org.sopt.dto.book.response.BookResponseDTO;
 import org.sopt.global.exception.BusinessException;
@@ -24,27 +24,27 @@ public class BookService {
     private static final int TOP_BOOK_LIMIT = 5;
 
     public List<BookResponseDTO> getTop5Books(){
-        List<Book> books = bookRepository.findAll();
-        int limit = Math.min(TOP_BOOK_LIMIT, books.size());
-        List<Book> top5Books = books.subList(0, limit);
+        List<BookEntity> bookEntities = bookRepository.findAll();
+        int limit = Math.min(TOP_BOOK_LIMIT, bookEntities.size());
+        List<BookEntity> top5BookEntities = bookEntities.subList(0, limit);
 
-        return top5Books.stream().map(book -> new BookResponseDTO(book.getRanking(),book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
+        return top5BookEntities.stream().map(bookEntity -> new BookResponseDTO(bookEntity.getRanking(), bookEntity.getTitle(), bookEntity.getAuthor(), bookEntity.getPublisher())).toList();
     }
 
     //도서 상세 조회
     public BookDetailResponseDTO getBookDetail(Long bookId){
-        Book book = bookRepository.findById(bookId)
+        BookEntity bookEntity = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BusinessException(BookErrorMessage.NOT_FOUND_BOOK));
 
-        if (book.getBookIndex() == null || book.getBookIndex().isBlank()) {
+        if (bookEntity.getBookIndex() == null || bookEntity.getBookIndex().isBlank()) {
             throw new BusinessException(BookErrorMessage.EMPTY_BOOK_INDEX);
         }
 
-        List<String> indexList = Arrays.stream(book.getBookIndex().split("\n"))
+        List<String> indexList = Arrays.stream(bookEntity.getBookIndex().split("\n"))
                 .filter(line -> !line.trim().isEmpty())
                 .toList();
 
-        return new BookDetailResponseDTO(book.getTitle(), book.getAuthor(), book.getPublisher(), book.getPublishDate(),book.getPrice() + "원", book.getDescription().replace("\n", " "), indexList);
+        return new BookDetailResponseDTO(bookEntity.getTitle(), bookEntity.getAuthor(), bookEntity.getPublisher(), bookEntity.getPublishDate(), bookEntity.getPrice() + "원", bookEntity.getDescription().replace("\n", " "), indexList);
 
     }
 }
