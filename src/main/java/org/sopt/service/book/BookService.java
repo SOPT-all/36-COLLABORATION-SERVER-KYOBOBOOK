@@ -1,8 +1,8 @@
 package org.sopt.service.book;
 
 import org.sopt.domain.book.Book;
+import org.sopt.dto.book.response.BookDetailResponseDTO;
 import org.sopt.dto.book.response.BookResponseDTO;
-import org.sopt.dto.book.response.BookResponseDetailDTO;
 import org.sopt.global.exception.BusinessException;
 import org.sopt.repository.book.BookRepository;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class BookService {
     }
 
     //도서 상세 조회
-    public BookResponseDetailDTO getBookDetail(Long bookId){
+    public BookDetailResponseDTO getBookDetail(Long bookId){
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BusinessException(BookErrorMessage.NOT_FOUND_BOOK));
 
@@ -44,7 +44,7 @@ public class BookService {
                 .filter(line -> !line.trim().isEmpty())
                 .toList();
 
-        return new BookResponseDetailDTO(book.getTitle(), book.getAuthor(), book.getPublisher(), book.getDate(), book.getPrice() + "원", book.getDescription().replace("\n", " "), indexList);
+        return new BookDetailResponseDTO(book.getTitle(), book.getAuthor(), book.getPublisher(), book.getPublishDate(),book.getPrice() + "원", book.getDescription().replace("\n", " "), indexList);
 
     }
 }

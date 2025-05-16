@@ -1,7 +1,7 @@
 package org.sopt.controller.book;
 
 import lombok.RequiredArgsConstructor;
-import org.sopt.dto.book.response.BookResponseDetailDTO;
+import org.sopt.dto.book.response.BookDetailResponseDTO;
 import org.sopt.global.dto.ResponseDTO;
 import org.sopt.service.book.BookService;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class BookController {
     }
 
     @GetMapping("/books/{bookId}")
-    public ResponseEntity<ResponseDTO<BookResponseDetailDTO>> getBookDetail(@PathVariable Long bookId) {
+    public ResponseEntity<ResponseDTO<BookDetailResponseDTO>> getBookDetail(@PathVariable Long bookId) {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getBookDetail(bookId)));
     }
 }

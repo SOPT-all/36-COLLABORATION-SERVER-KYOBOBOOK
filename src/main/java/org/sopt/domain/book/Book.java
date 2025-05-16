@@ -27,6 +27,7 @@ public class Book {
     private LocalDate publishDate;
     private String author;
     private Long ranking;
+    private String imageUrl;
 
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
