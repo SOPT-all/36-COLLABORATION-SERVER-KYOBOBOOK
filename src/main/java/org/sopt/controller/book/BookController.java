@@ -20,6 +20,7 @@ public class BookController {
 
     private final BookService bookService;
 
+
     @GetMapping("/books/top5")
     public ResponseEntity<ResponseDTO<List<BookResponseDTO>>> getTop5Books() {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getTop5Books()));
