@@ -26,7 +26,7 @@ public class Book {
     private String description;
     private LocalDate publishDate;
     private String author;
-    private Long rank;
+    private Long ranking;
 
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
