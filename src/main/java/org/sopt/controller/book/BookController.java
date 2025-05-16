@@ -1,8 +1,8 @@
 package org.sopt.controller.book;
 
-
 import lombok.RequiredArgsConstructor;
 import org.sopt.dto.book.response.BookResponseDetailDTO;
+import org.sopt.global.dto.ResponseDTO;
 import org.sopt.service.book.BookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,18 +20,13 @@ public class BookController {
 
     private final BookService bookService;
 
-    //@GetMapping("/health")
-    //public ResponseEntity<String> test() {
-    //    return ResponseEntity.ok("OK");
-    //}
-
     @GetMapping("/books/top5")
-    public List<BookResponseDTO> getTop5Books() {
-        return bookService.getTop5Books();
+    public ResponseEntity<ResponseDTO<List<BookResponseDTO>>> getTop5Books() {
+        return ResponseEntity.ok(ResponseDTO.success(bookService.getTop5Books()));
     }
 
-    @GetMapping("/books/{id}")
-    public BookResponseDetailDTO getBookDetail(@PathVariable Long id) {
-        return bookService.getBookDetail(id);
+    @GetMapping("/books/{bookId}")
+    public ResponseEntity<ResponseDTO<BookResponseDetailDTO>> getBookDetail(@PathVariable Long bookId) {
+        return ResponseEntity.ok(ResponseDTO.success(bookService.getBookDetail(bookId)));
     }
 }

@@ -3,8 +3,10 @@ package org.sopt.service.book;
 import org.sopt.domain.book.Book;
 import org.sopt.dto.book.response.BookResponseDTO;
 import org.sopt.dto.book.response.BookResponseDetailDTO;
+import org.sopt.global.exception.BusinessException;
 import org.sopt.repository.book.BookRepository;
 import org.springframework.stereotype.Service;
+import org.sopt.global.message.business.BookErrorMessage;
 
 //import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,11 +31,13 @@ public class BookService {
     }
 
     //도서 상세 조회
+    public BookResponseDetailDTO getBookDetail(Long bookId){
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BusinessException(BookErrorMessage.NOT_FOUND_BOOK));
 
-
-    public BookResponseDetailDTO getBookDetail(Long id){
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 도서를 찾을 수 없습니다"));
+        if (book.getBookIndex() == null || book.getBookIndex().isBlank()) {
+            throw new BusinessException(BookErrorMessage.EMPTY_BOOK_INDEX);
+        }
 
         List<String> indexList = Arrays.stream(book.getBookIndex().split("\n"))
                 .filter(line -> !line.trim().isEmpty())
@@ -42,8 +46,4 @@ public class BookService {
         return new BookResponseDetailDTO(book.getTitle(), book.getAuthor(), book.getPublisher(), book.getDate(), book.getPrice() + "원", book.getDescription().replace("\n", " "), indexList);
 
     }
-
-
-
-
 }
