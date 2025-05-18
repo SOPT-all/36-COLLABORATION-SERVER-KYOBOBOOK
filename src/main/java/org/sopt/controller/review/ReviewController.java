@@ -17,13 +17,19 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/reviews/{bookId}")
+    @GetMapping("/{bookId}")
     public ResponseEntity<ResponseDTO<ReviewListResponseDTO>> getReviews(@PathVariable Long bookId) {
+        return ResponseEntity.ok(ResponseDTO.success(reviewService.getReviewsByBookId(bookId)));
+    }
+
+
+    @GetMapping("statistic/{bookId}")
+    public ResponseEntity<ResponseDTO<ReviewListResponseDTO>> getReviewStatics(@PathVariable Long bookId) {
         return ResponseEntity.ok(ResponseDTO.success(reviewService.getReviewsByBookId(bookId)));
     }
 }

@@ -37,7 +37,6 @@ public class ReviewService {
 
         return new ReviewListResponseDTO(reviewResponseList.size(), reviewResponseList);
 
-
     }
 
 }
