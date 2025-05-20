@@ -1,4 +1,8 @@
 package org.sopt.dto.review.response;
 
-public record ReviewStatisticResponseDTO(Long averageStar, ) {
+import java.util.List;
+
+public record ReviewStatisticResponseDTO(Double averageStar,
+                                         List<EmotionStatisticDTO> emotionStatistics,
+                                         List<StarStatisticDTO> starStatistics) {
 }

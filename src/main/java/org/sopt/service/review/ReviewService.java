@@ -1,13 +1,17 @@
 package org.sopt.service.review;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import org.sopt.domain.review.entity.ReviewEntity;
 import org.sopt.domain.review.mapper.ReviewMapper;
 import org.sopt.domain.review.model.Review;
+import org.sopt.domain.review.model.statistic.ReviewStatistic;
 import org.sopt.dto.review.response.ReviewListResponseDTO;
 import org.sopt.dto.review.response.ReviewResponseDTO;
+import org.sopt.dto.review.response.ReviewStatisticResponseDTO;
 import org.sopt.global.exception.BusinessException;
 import org.sopt.repository.Review.ReviewRepository;
+import org.sopt.repository.Review.ReviewStatisticRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,6 +21,7 @@ import java.util.List;
 public class ReviewService {
 
     private ReviewRepository reviewRepository;
+    private ReviewStatisticRepository reviewStatisticRepository;
 
     public ReviewService(ReviewRepository reviewRepository){
         this.reviewRepository = reviewRepository;
@@ -39,7 +44,10 @@ public class ReviewService {
 
     }
 
-}
+    public ReviewStatisticResponseDTO getReviewStatisticByBookId(Long bookId){
+        ReviewStatistic reviewStatistic = reviewStatisticRepository.findWithStatsByBookId(bookId).orElseThrow(()-> new EntityNotFoundException("리뷰 통계를 찾을 수 없습니다."));
 
-//public record ReviewResponseDTO(String reviewer, String content, Long star, String reviewImage, LocalDate date,
-//                                List<String> emotions) {
+        return;
+
+    }
+}
