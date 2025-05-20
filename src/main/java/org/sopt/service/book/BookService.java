@@ -31,6 +31,12 @@ public class BookService {
         return top5Books.stream().map(book -> new BookResponseDTO(book.getRanking(),book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
     }
 
+    public List<BookResponseDTO> getAllBooks(){
+        List<Book> books = bookRepository.findAll();
+
+        return books.stream().map(book -> new BookResponseDTO(book.getRanking(),book.getTitle(),book.getAuthor(),book.getPublisher())).toList();
+    }
+
     //도서 상세 조회
     public BookDetailResponseDTO getBookDetail(Long bookId){
         Book book = bookRepository.findById(bookId)
