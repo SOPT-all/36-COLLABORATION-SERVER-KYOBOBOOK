@@ -36,7 +36,7 @@ public class BookService {
         int limit = Math.min(TOP_BOOK_LIMIT, bookEntities.size());
         List<BookEntity> top5BookEntities = bookEntities.subList(0, limit);
 
-        return top5BookEntities.stream().map(bookEntity -> new BookResponseDTO(bookEntity.getRanking(), bookEntity.getTitle(), bookEntity.getAuthor(), bookEntity.getPublisher())).toList();
+        return top5BookEntities.stream().map(bookEntity -> new BookResponseDTO(bookEntity.getRanking(), bookEntity.getTitle(), bookEntity.getAuthor(), bookEntity.getPublisher(), bookEntity.getImageUrl())).toList();
     }
 
     public List<BookTotalResponseDTO> getAllBooks() {
@@ -87,7 +87,7 @@ public class BookService {
 
 
 
-        return new BookDetailResponseDTO(bookEntity.getTitle(), bookEntity.getAuthor(), bookEntity.getPublisher(), bookEntity.getPublishDate(), bookEntity.getPrice() + "원", bookEntity.getDescription().replace("\n", " "), indexList);
+        return new BookDetailResponseDTO(bookEntity.getTitle(), bookEntity.getAuthor(), bookEntity.getPublisher(), bookEntity.getPublishDate(), bookEntity.getPrice() + "원", bookEntity.getDescription().replace("\n", " "), bookEntity.getImageUrl(), indexList);
 
     }
 }

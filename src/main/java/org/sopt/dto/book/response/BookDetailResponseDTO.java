@@ -10,5 +10,6 @@ public record BookDetailResponseDTO(
         String date,
         String price,
         String description,
+        String imageUrl,
         List<String> bookIndex
 ) {}
