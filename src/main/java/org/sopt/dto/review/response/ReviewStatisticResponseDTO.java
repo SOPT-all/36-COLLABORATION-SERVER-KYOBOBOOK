@@ -7,4 +7,5 @@ public record ReviewStatisticResponseDTO(
         Double averageStar,
         Map<Integer, Integer> starDistribution,
         Map<String, Integer> emotionDistribution
+
 ) {}

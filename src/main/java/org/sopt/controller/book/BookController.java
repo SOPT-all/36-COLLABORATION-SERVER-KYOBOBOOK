@@ -2,6 +2,8 @@ package org.sopt.controller.book;
 
 import lombok.RequiredArgsConstructor;
 import org.sopt.dto.book.response.BookDetailResponseDTO;
+import org.sopt.dto.book.response.BookTotalResponseDTO;
+import org.sopt.dto.review.response.BookDetailListResponseDTO;
 import org.sopt.global.dto.ResponseDTO;
 import org.sopt.service.book.BookService;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,7 @@ public class BookController {
     }
 
     @GetMapping("/books")
-    public ResponseEntity<ResponseDTO<List<BookResponseDTO>>> getAllBooks() {
+    public ResponseEntity<ResponseDTO<List<BookTotalResponseDTO>>>getAllBooks() {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getAllBooks()));
     }
 

@@ -1,9 +1,9 @@
-package org.sopt.dto.book.response;
+package org.sopt.dto.review.response;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public record BookDetailResponseDTO(
+        Long bookid,
         String title,
         String author,
         String publisher,

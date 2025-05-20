@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.sopt.domain.book.entity.BookEntity;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

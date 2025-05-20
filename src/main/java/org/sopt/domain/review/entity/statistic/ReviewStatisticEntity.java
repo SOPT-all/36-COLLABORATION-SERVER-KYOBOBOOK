@@ -20,6 +20,10 @@ public class ReviewStatisticEntity {
     private Long reviewStatisticId;
 
     private Double averageStar;
+    @Column(name = "average_emotion")
+    private String averageEmotion;
+
+
 
     @OneToOne
     @JoinColumn(name = "book_id", nullable = false, unique = true)

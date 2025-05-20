@@ -25,7 +25,7 @@ public class BookEntity {
     private String publisher;
     private String bookIndex;
     private String description;
-    private LocalDate publishDate;
+    private String publishDate;
     private String author;
     private Long ranking;
     private String imageUrl;
