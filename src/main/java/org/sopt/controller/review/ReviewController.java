@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.sopt.dto.book.response.BookResponseDTO;
 import org.sopt.dto.review.response.ReviewListResponseDTO;
 import org.sopt.dto.review.response.ReviewResponseDTO;
+import org.sopt.dto.review.response.ReviewStatisticResponseDTO;
 import org.sopt.global.dto.ResponseDTO;
 import org.sopt.service.review.ReviewService;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+
     @GetMapping("/{bookId}")
     public ResponseEntity<ResponseDTO<ReviewListResponseDTO>> getReviews(@PathVariable Long bookId) {
         return ResponseEntity.ok(ResponseDTO.success(reviewService.getReviewsByBookId(bookId)));
@@ -29,7 +31,8 @@ public class ReviewController {
 
 
     @GetMapping("statistic/{bookId}")
-    public ResponseEntity<ResponseDTO<ReviewListResponseDTO>> getReviewStatics(@PathVariable Long bookId) {
-        return ResponseEntity.ok(ResponseDTO.success(reviewService.getReviewsByBookId(bookId)));
+    public ResponseEntity<ResponseDTO<ReviewStatisticResponseDTO>> getReviewStatics(@PathVariable Long bookId) {
+        ReviewStatisticResponseDTO response = reviewService.getReviewStatistic(bookId);
+        return ResponseEntity.ok(ResponseDTO.success(response));
     }
 }

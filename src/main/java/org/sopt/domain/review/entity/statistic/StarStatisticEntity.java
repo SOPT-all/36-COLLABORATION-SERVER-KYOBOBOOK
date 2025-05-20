@@ -1,12 +1,12 @@
 package org.sopt.domain.review.entity.statistic;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "star_statistic")
 public class StarStatisticEntity {
@@ -21,4 +21,17 @@ public class StarStatisticEntity {
     @ManyToOne
     @JoinColumn(name = "review_statistic_id")
     private ReviewStatisticEntity reviewStatistic;
+
+    public void updateStarPoint(int starPoint) {
+        this.starPoint = starPoint;
+    }
+
+    public void updateCount(int count) {
+        this.count = count;
+    }
+
+    public void updateReviewStatistic(ReviewStatisticEntity reviewStatistic) {
+        this.reviewStatistic = reviewStatistic;
+    }
+
 }

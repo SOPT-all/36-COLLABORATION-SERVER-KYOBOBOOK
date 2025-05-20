@@ -1,176 +1,129 @@
-package org.sopt.service.review;
-
-
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.sopt.domain.review.entity.ReviewEntity;
-import org.sopt.domain.review.entity.statistic.EmotionStatisticEntity;
-import org.sopt.domain.review.entity.statistic.ReviewStatisticEntity;
-import org.sopt.domain.review.entity.statistic.StarStatisticEntity;
-import org.sopt.dto.review.response.EmotionStatisticDTO;
-import org.sopt.dto.review.response.ReviewStatisticResponseDTO;
-import org.sopt.dto.review.response.StarStatisticDTO;
-import org.sopt.repository.Review.EmotionStatisticRepository;
-import org.sopt.repository.Review.ReviewRepository;
-import org.sopt.repository.Review.ReviewStatisticRepository;
-import org.sopt.repository.Review.StarStatisticRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-@Service
-@RequiredArgsConstructor
-public class ReviewStatisticService {
-
-    private final ReviewRepository reviewRepository;
-    private final ReviewStatisticRepository reviewStatisticRepository;
-    private final EmotionStatisticRepository emotionStatisticRepository;
-    private final StarStatisticRepository starStatisticRepository;
-
-    @Transactional(readOnly = true)
-    public ReviewStatisticResponseDTO getReviewStatisticByBookId(Long bookId) {
-        ReviewStatisticEntity reviewStatistic = reviewStatisticRepository
-                .findWithStatsByBookId(bookId)
-                .orElseGet(() -> {
-                    calculateAndSaveStatistics(bookId);
-                    return reviewStatisticRepository.findWithStatsByBookId(bookId)
-                            .orElseThrow(() -> new EntityNotFoundException("리뷰 통계를 찾을 수 없습니다."));
-                });
-
-        return ReviewStatisticResponseDTO.builder()
-                .averageStar(reviewStatistic.getAverageStar())
-                .emotionStatistics(
-                        reviewStatistic.getEmotionStatisticEntities().stream()
-                                .map(es -> new EmotionStatisticDTO(es.getEmotionTag(), calculatePercentage(es.getCount(), reviewStatistic.getEmotionStatisticEntities())))
-                                .toList())
-                .starStatistics(
-                        reviewStatistic.getStarStatisticEntities().stream()
-                                .map(ss -> new StarStatisticDTO(ss.getStarPoint(), calculatePercentage(ss.getCount(), reviewStatistic.getStarStatisticEntities())))
-                                .toList())
-                .build();
-    }
-
-    private <T> float calculatePercentage(int count, List<T> list) {
-        int total = list.stream()
-                .mapToInt(e -> {
-                    if (e instanceof EmotionStatisticEntity) {
-                        return ((EmotionStatisticEntity) e).getCount();
-                    } else if (e instanceof StarStatisticEntity) {
-                        return ((StarStatisticEntity) e).getCount();
-                    }
-                    return 0;
-                })
-                .sum();
-        return total == 0 ? 0f : (count * 100f / total);
-    }
-
-    @Transactional
-    public void calculateAndSaveStatistics(Long bookId) {
-        List<ReviewEntity> reviews = reviewRepository.findAllByBook_BookId(bookId);
-
-        if (reviews.isEmpty()) {
-            // 리뷰가 없으면 기존 통계 삭제 혹은 처리 로직 필요
-            return;
-        }
-
-        // 평균 별점 계산
-        double averageStar = reviews.stream()
-                .mapToInt(ReviewEntity::getStarPoint)
-                .average()
-                .orElse(0.0);
-
-        // 감정 통계 계산
-        Map<String, Integer> emotionCountMap = new HashMap<>();
-        for (ReviewEntity review : reviews) {
-            review.getEmotionTags().forEach(tag ->
-                    emotionCountMap.put(tag, emotionCountMap.getOrDefault(tag, 0) + 1));
-        }
-
-        // 별점 통계 계산
-        Map<Integer, Integer> starCountMap = new HashMap<>();
-        for (ReviewEntity review : reviews) {
-            int star = review.getStarPoint();
-            starCountMap.put(star, starCountMap.getOrDefault(star, 0) + 1);
-        }
-
-        // 기존 ReviewStatisticEntity 조회 혹은 새로 생성
-        ReviewStatisticEntity reviewStatistic = reviewStatisticRepository.findWithStatsByBookId(bookId)
-                .orElseGet(() -> {
-                    ReviewStatisticEntity entity = new ReviewStatisticEntity();
-                    try {
-                        java.lang.reflect.Field bookField = ReviewStatisticEntity.class.getDeclaredField("book");
-                        bookField.setAccessible(true);
-                        // book 엔티티를 BookRepository에서 조회해 넣어야 함
-                        // 예) bookField.set(entity, bookRepository.findById(bookId).orElseThrow());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    return entity;
-                });
-
-        // 평균 별점 세팅
-        try {
-            java.lang.reflect.Field averageStarField = ReviewStatisticEntity.class.getDeclaredField("averageStar");
-            averageStarField.setAccessible(true);
-            averageStarField.set(reviewStatistic, averageStar);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        // 기존 통계 초기화
-        reviewStatistic.getEmotionStatisticEntities().clear();
-        reviewStatistic.getStarStatisticEntities().clear();
-
-        // 감정 통계 엔티티 생성 후 추가
-        List<EmotionStatisticEntity> emotionStatistics = emotionCountMap.entrySet().stream()
-                .map(entry -> {
-                    EmotionStatisticEntity entity = new EmotionStatisticEntity();
-                    try {
-                        java.lang.reflect.Field tagField = EmotionStatisticEntity.class.getDeclaredField("emotionTag");
-                        tagField.setAccessible(true);
-                        tagField.set(entity, entry.getKey());
-
-                        java.lang.reflect.Field countField = EmotionStatisticEntity.class.getDeclaredField("count");
-                        countField.setAccessible(true);
-                        countField.set(entity, entry.getValue());
-
-                        java.lang.reflect.Field reviewStatField = EmotionStatisticEntity.class.getDeclaredField("reviewStatistic");
-                        reviewStatField.setAccessible(true);
-                        reviewStatField.set(entity, reviewStatistic);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    return entity;
-                }).toList();
-
-        // 별점 통계 엔티티 생성 후 추가
-        List<StarStatisticEntity> starStatistics = starCountMap.entrySet().stream()
-                .map(entry -> {
-                    StarStatisticEntity entity = new StarStatisticEntity();
-                    try {
-                        java.lang.reflect.Field starPointField = StarStatisticEntity.class.getDeclaredField("starPoint");
-                        starPointField.setAccessible(true);
-                        starPointField.set(entity, entry.getKey());
-
-                        java.lang.reflect.Field countField = StarStatisticEntity.class.getDeclaredField("count");
-                        countField.setAccessible(true);
-                        countField.set(entity, entry.getValue());
-
-                        java.lang.reflect.Field reviewStatField = StarStatisticEntity.class.getDeclaredField("reviewStatistic");
-                        reviewStatField.setAccessible(true);
-                        reviewStatField.set(entity, reviewStatistic);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    return entity;
-                }).toList();
-
-        reviewStatistic.getEmotionStatisticEntities().addAll(emotionStatistics);
-        reviewStatistic.getStarStatisticEntities().addAll(starStatistics);
-
-        reviewStatisticRepository.save(reviewStatistic);
-    }
-}
+//package org.sopt.service.review;
+//
+//
+//import jakarta.persistence.EntityNotFoundException;
+//import lombok.RequiredArgsConstructor;
+//import org.sopt.domain.book.entity.BookEntity;
+//import org.sopt.domain.review.entity.ReviewEntity;
+//import org.sopt.domain.review.entity.statistic.EmotionStatisticEntity;
+//import org.sopt.domain.review.entity.statistic.ReviewStatisticEntity;
+//import org.sopt.domain.review.entity.statistic.StarStatisticEntity;
+//import org.sopt.domain.review.mapper.ReviewStatisticMapper;
+//import org.sopt.dto.review.response.EmotionStatisticDTO;
+//import org.sopt.dto.review.response.ReviewStatisticResponseDTO;
+//import org.sopt.dto.review.response.StarStatisticDTO;
+//import org.sopt.repository.Review.EmotionStatisticRepository;
+//import org.sopt.repository.Review.ReviewRepository;
+//import org.sopt.repository.Review.ReviewStatisticRepository;
+//import org.sopt.repository.Review.StarStatisticRepository;
+//import org.sopt.repository.book.BookRepository;
+//import org.springframework.stereotype.Service;
+//import org.springframework.transaction.annotation.Transactional;
+//
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
+//import java.util.function.Function;
+//import java.util.stream.Collectors;
+//import java.util.stream.IntStream;
+//
+//@Service
+//@RequiredArgsConstructor
+//public class ReviewStatisticService {
+//
+//    private final BookRepository bookRepository;
+//    private final ReviewRepository reviewRepository;
+//    private final ReviewStatisticRepository reviewStatisticRepository;
+//    private final EmotionStatisticRepository emotionStatisticRepository;
+//    private final StarStatisticRepository starStatisticRepository;
+//
+//    public ReviewStatisticResponseDTO updateReviewStatistics(Long bookId) {
+//        // 1. 리뷰 불러오기
+//        List<ReviewEntity> reviews = reviewRepository.findAllByBook_BookId(bookId);
+//        if (reviews.isEmpty()) {
+//            throw new RuntimeException("해당 책의 리뷰가 없습니다.");
+//        }
+//
+//        // 총 리뷰 수
+//        int totalReviews = reviews.size();
+//
+//        // 2. 평균 별점 계산
+//        double averageStar = reviews.stream()
+//                .mapToInt(r -> r.getStar().intValue())
+//                .average()
+//                .orElse(0.0);
+//
+//        // 3. 별점별 개수 계산
+//        Map<Integer, Long> starCounts = reviews.stream()
+//                .collect(Collectors.groupingBy(r -> r.getStar().intValue(), Collectors.counting()));
+//
+//        // 4. 감정별 개수 계산
+//        Map<String, Long> emotionCounts = reviews.stream()
+//                .flatMap(r -> r.getReviewEmotionEntities().stream())
+//                .map(re -> re.getEmotion().getEmotionTag())
+//                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+//
+//        // 감정 총 개수 (전체 감정 태그 갯수 합)
+//        long totalEmotions = emotionCounts.values().stream().mapToLong(Long::longValue).sum();
+//
+//        // 5. 기존 ReviewStatisticEntity 가져오기 또는 새로 생성
+//        ReviewStatisticEntity stat = reviewStatisticRepository.findByBook_BookId(bookId)
+//                .orElseGet(() -> {
+//                    BookEntity book = bookRepository.findById(bookId)
+//                            .orElseThrow(() -> new RuntimeException("책이 존재하지 않습니다."));
+//                    return ReviewStatisticEntity.builder()
+//                            .book(book)
+//                            .averageStar(0.0)
+//                            .build();
+//                });
+//
+//        // 6. 평균 별점 업데이트
+//        stat.updateAverageStar(averageStar);
+//
+//        // 7. 새로운 StarStatisticEntity 리스트 생성 (count는 유지)
+//        List<StarStatisticEntity> newStarStats = IntStream.rangeClosed(1, 5)
+//                .mapToObj(star -> StarStatisticEntity.builder()
+//                        .starPoint(star)
+//                        .count(starCounts.getOrDefault(star, 0L).intValue())
+//                        .reviewStatistic(stat)
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        // 8. 새로운 EmotionStatisticEntity 리스트 생성 (count는 유지)
+//        List<EmotionStatisticEntity> newEmotionStats = emotionCounts.entrySet().stream()
+//                .map(entry -> EmotionStatisticEntity.builder()
+//                        .emotionTag(entry.getKey())
+//                        .count(entry.getValue().intValue())
+//                        .reviewStatistic(stat)
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        // 9. 기존 리스트 교체
+//        stat.updateStarStatistics(newStarStats);
+//        stat.updateEmotionStatistics(newEmotionStats);
+//
+//        // 10. 저장
+//        reviewStatisticRepository.save(stat);
+//
+//        // 11. DTO 생성 시 count → percentage 변환해서 반환
+//        return new ReviewStatisticResponseDTO(
+//                averageStar,
+//                newEmotionStats.stream()
+//                        .map(es -> new EmotionStatisticDTO(
+//                                es.getEmotionTag(),
+//                                (int) Math.round((es.getCount() * 100.0) / totalReviews)
+//                        ))
+//                        .toList(),
+//                newStarStats.stream()
+//                        .map(ss -> new StarStatisticDTO(
+//                                ss.getStarPoint(),
+//                                (int) Math.round((ss.getCount() * 100.0) / totalReviews)
+//                        ))
+//                        .toList()
+//        );
+//
+//    }
+//
+//
+//
+//}
