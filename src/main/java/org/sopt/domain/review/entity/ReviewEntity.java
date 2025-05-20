@@ -1,10 +1,10 @@
-package org.sopt.domain.review;
+package org.sopt.domain.review.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.sopt.domain.book.Book;
+import org.sopt.domain.book.entity.BookEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +13,12 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "review")
-public class Review {
+public class ReviewEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_id")
     private Long reviewId;
-
+    private String reviewer;
     private String content;
     private String reviewImage;
     private Long star;
@@ -25,10 +26,10 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "book_id")
-    private Book book;
+    private BookEntity book;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewEmotion> reviewEmotions  = new ArrayList<>();
+    private List<ReviewEmotionEntity> reviewEmotionEntities = new ArrayList<>();
 
 
 }

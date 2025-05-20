@@ -1,11 +1,11 @@
-package org.sopt.domain.book;
+package org.sopt.domain.book.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.sopt.domain.review.Review;
-import org.sopt.domain.review.statistic.ReviewStatistic;
+import org.sopt.domain.review.entity.ReviewEntity;
+import org.sopt.domain.review.entity.statistic.ReviewStatisticEntity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,9 +15,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "book")
-public class Book {
+public class BookEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_id")
     private Long bookId;
     private String title;
     private String price;
@@ -31,8 +32,8 @@ public class Book {
 
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ReviewStatistic reviewStatistic;
+    private ReviewStatisticEntity reviewStatisticEntity;
 
     @OneToMany(mappedBy = "book")
-    private List<Review> reviews =new ArrayList<>();
+    private List<ReviewEntity> reviews =new ArrayList<>();
 }
