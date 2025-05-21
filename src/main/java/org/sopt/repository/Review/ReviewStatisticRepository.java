@@ -1,11 +1,9 @@
 package org.sopt.repository.Review;
 
-import org.sopt.domain.review.entity.ReviewEntity;
 import org.sopt.domain.review.entity.statistic.ReviewStatisticEntity;
-import org.sopt.domain.review.model.statistic.ReviewStatistic;
+
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
 
 import java.util.Optional;
 
