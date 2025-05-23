@@ -17,22 +17,22 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/books")
 public class BookController {
 
     private final BookService bookService;
 
 
-    @GetMapping("/books/top5")
+    @GetMapping("/top5")
     public ResponseEntity<ResponseDTO<List<BookResponseDTO>>> getTop5Books() {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getTop5Books()));
     }
 
-    @GetMapping("/books")
+    @GetMapping
     public ResponseEntity<ResponseDTO<List<BookTotalResponseDTO>>>getAllBooks() {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getAllBooks()));
     }
-    @GetMapping("/books/{bookId}")
+    @GetMapping("/{bookId}")
     public ResponseEntity<ResponseDTO<BookDetailResponseDTO>> getBookDetail(@PathVariable Long bookId) {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getBookDetail(bookId)));
     }

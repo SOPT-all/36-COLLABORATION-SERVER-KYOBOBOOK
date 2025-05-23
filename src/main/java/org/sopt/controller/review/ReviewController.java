@@ -30,7 +30,7 @@ public class ReviewController {
     }
 
 
-    @GetMapping("statistic/{bookId}")
+    @GetMapping("/statistic/{bookId}")
     public ResponseEntity<ResponseDTO<ReviewStatisticResponseDTO>> getReviewStatics(@PathVariable Long bookId) {
         ReviewStatisticResponseDTO response = reviewService.getReviewStatistic(bookId);
         return ResponseEntity.ok(ResponseDTO.success(response));
