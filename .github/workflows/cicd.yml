@@ -1,12 +1,8 @@
-name: CI/CD
+name: CICD
 
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to deploy'
-        required: true
-        default: 'main'
+  push:
+    branches: [main]
 
 jobs:
   build:
@@ -14,8 +10,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.branch }}
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -30,6 +24,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.CD_APPLICATION }}" > ./src/main/resources/application.yml
+          cat ./src/main/resources/application.yml
 
       - name: Build Project
         run: ./gradlew clean build -x test
@@ -38,10 +33,10 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t dltnals317/kyobo-app:latest .
+        run: docker build -t dltnals317/sopt_collaboration .
 
       - name: Publish Image to Docker Hub
-        run: docker push dltnals317/kyobo-app:latest
+        run: docker push dltnals317/sopt_collaboration:latest
 
   deploy:
     needs: build
@@ -53,80 +48,13 @@ jobs:
       - name: Create SSH Key File
         run: |
           echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ssh_key.pem
-          echo "${{ secrets.DEV_EC2_PUBLIC_IP }}" > ec2_public_ip.txt
           chmod 600 ssh_key.pem
 
       - name: SSH into EC2 and Deploy
         run: |
-          EC2_PUBLIC_IP=$(cat ec2_public_ip.txt)
-
-          echo "📄 Deploy 스크립트 생성 중..."
-          cat << 'EOSCRIPT' > deploy.sh
-          #!/bin/bash
-
-          echo "🔍 현재 실행 중인 포트 확인"
-          ACTIVE_PORT=$(sudo docker ps --format "{{.Ports}}" | grep -oE '0.0.0.0:808[12]' | cut -d':' -f2 | cut -d'-' -f1)
-
-          echo "🌐 Docker 네트워크 존재 여부 확인"
-          if ! sudo docker network inspect kyobo-network > /dev/null 2>&1; then
-            echo "➕ 네트워크 kyobo-network 생성"
-            sudo docker network create kyobo-network
-          else
-            echo "✅ 네트워크 kyobo-network 이미 존재"
-          fi
-
-          REDIS_EXISTS=$(sudo docker ps -a -q -f name=^redis$)
-          REDIS_RUNNING=$(sudo docker ps -q -f name=^redis$)
-
-          if [ -n "$REDIS_EXISTS" ]; then
-            echo "🔗 Redis 컨테이너가 존재합니다."
-            if [ -n "$REDIS_RUNNING" ]; then
-              echo "🔄 Redis 실행 중 → 네트워크 연결"
-              sudo docker network connect kyobo-network redis || true
-            else
-              echo "⏯ Redis 정지 상태 → 시작 및 네트워크 연결"
-              sudo docker start redis
-              sudo docker network connect kyobo-network redis || true
-            fi
-          else
-            echo "🚀 Redis 없음 → 새로 생성"
-            sudo docker run -d --name redis --network kyobo-network redis
-          fi
-
-          if [[ -z "$ACTIVE_PORT" ]]; then
-            echo "⚠️ 실행 중인 포트 없음 → 8081 설정"
-            ACTIVE_PORT="8081"
-          fi
-
-          if [[ "$ACTIVE_PORT" == "8081" ]]; then
-            NEW_PORT="8082"
-          else
-            NEW_PORT="8081"
-          fi
-
-          echo "🧹 기존 컨테이너 제거 (필요 시)"
-          sudo docker rm -f kyobo-app-$NEW_PORT || true
-
-          echo "🚀 최신 이미지 가져오기"
-          sudo docker pull dltnals317/kyobo-app:latest
-
-          echo "🔧 새 컨테이너 실행"
-          sudo docker run -d -p $NEW_PORT:8080 \
-            --name kyobo-app-$NEW_PORT \
-            --network kyobo-network \
-            dltnals317/kyobo-app:latest
-
-          echo "⌛️ 30초 대기"
-          sleep 30
-
-          echo "🛑 이전 컨테이너 제거"
-          sudo docker stop kyobo-app-$ACTIVE_PORT || true
-          sudo docker rm kyobo-app-$ACTIVE_PORT || true
-
-          echo "✅ 배포 완료. 실행 중인 컨테이너 확인:"
-          sudo docker ps -a
-          EOSCRIPT
-
-          echo "🚀 SSH 접속 및 배포 스크립트 실행"
-          scp -i ssh_key.pem -o StrictHostKeyChecking=no deploy.sh ec2-user@$EC2_PUBLIC_IP:~
-          ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP 'bash ~/deploy.sh'
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ secrets.DEV_EC2_PUBLIC_IP }} << 'EOF'
+          sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          sudo docker pull dltnals317/sopt_collaboration:latest
+          sudo docker rm -f sopt-collaboration-container || true
+          sudo docker run -d -p 8080:8080 --name sopt-collaboration-container dltnals317/sopt_collaboration
+          EOF
