@@ -32,7 +32,6 @@ public class BookController {
     public ResponseEntity<ResponseDTO<List<BookTotalResponseDTO>>>getAllBooks() {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getAllBooks()));
     }
-
     @GetMapping("/books/{bookId}")
     public ResponseEntity<ResponseDTO<BookDetailResponseDTO>> getBookDetail(@PathVariable Long bookId) {
         return ResponseEntity.ok(ResponseDTO.success(bookService.getBookDetail(bookId)));
